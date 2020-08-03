@@ -9,6 +9,7 @@ use Drupal\Core\Field\FormatterPluginManager;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\bootstrap_styles\StylesGroup\StylesGroupManager;
+use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\layout_builder\Plugin\Block\FieldBlock as BaseFieldBlock;
 
 /**
@@ -22,6 +23,13 @@ class FieldBlock extends BaseFieldBlock {
    * @var \Drupal\bootstrap_styles\StylesGroup\StylesGroupManager
    */
   protected $stylesGroupManager;
+
+  /**
+   * The config factory.
+   *
+   * @var \Drupal\Core\Config\ConfigFactoryInterface
+   */
+  protected $configFactory;
 
   /**
    * Constructs a new FieldBlock.
@@ -40,10 +48,15 @@ class FieldBlock extends BaseFieldBlock {
    *   The module handler.
    * @param \Psr\Log\LoggerInterface $logger
    *   The logger.
+   * @param \Drupal\bootstrap_styles\StylesGroup\StylesGroupManager $styles_group_manager
+   *   The styles group plugin manager.
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
+   *   Config factory service.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, EntityFieldManagerInterface $entity_field_manager, FormatterPluginManager $formatter_manager, ModuleHandlerInterface $module_handler, LoggerInterface $logger, StylesGroupManager $styles_group_manager) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, EntityFieldManagerInterface $entity_field_manager, FormatterPluginManager $formatter_manager, ModuleHandlerInterface $module_handler, LoggerInterface $logger, StylesGroupManager $styles_group_manager, ConfigFactoryInterface $config_factory) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $entity_field_manager, $formatter_manager, $module_handler, $logger);
     $this->stylesGroupManager = $styles_group_manager;
+    $this->configFactory = $config_factory;
   }
 
   /**
@@ -58,7 +71,8 @@ class FieldBlock extends BaseFieldBlock {
       $container->get('plugin.manager.field.formatter'),
       $container->get('module_handler'),
       $container->get('logger.channel.layout_builder'),
-      $container->get('plugin.manager.bootstrap_styles_group')
+      $container->get('plugin.manager.bootstrap_styles_group'),
+      $container->get('config.factory')
     );
   }
 
@@ -79,6 +93,16 @@ class FieldBlock extends BaseFieldBlock {
    */
   public function buildConfigurationForm(array $form, FormStateInterface $form_state) {
     $parent_form = parent::buildConfigurationForm($form, $form_state);
+    // Check for restrictions.
+    $config = $this->configFactory->get('layout_builder_blocks.styles');
+    if (
+      $config->get('block_restrictions')
+      && count($config->get('block_restrictions')) > 0
+      && !in_array($this->getPluginId(), $config->get('block_restrictions'))
+    ) {
+      // Return parent form.
+      return $parent_form;
+    }
 
     $form = [
       '#tree' => FALSE,
@@ -115,8 +139,8 @@ class FieldBlock extends BaseFieldBlock {
       '#type' => 'html_tag',
       '#tag' => 'ul',
       '#attributes' => [
-        'class' => 'blb_nav-tabs',
-        'id' => 'blb_nav-tabs',
+        'class' => 'bs_nav-tabs',
+        'id' => 'bs_nav-tabs',
         'role' => 'tablist',
       ],
     ];
@@ -125,7 +149,7 @@ class FieldBlock extends BaseFieldBlock {
       '#type' => 'container',
       '#attributes' => [
         'class' => 'blb_tab-content',
-        'id' => 'blb_tabContent',
+        'id' => 'bs_tabContent',
       ],
       '#tree' => FALSE,
       '#parents' => ['tab_content'],
@@ -140,7 +164,7 @@ class FieldBlock extends BaseFieldBlock {
           'title' => $tab['title'],
           'target' => $tab['machine_name'],
           'active' => isset($tab['active']) && $tab['active'] == TRUE ? 'active' : '',
-          'icon' => t('<img class="blb_icon" src="/' . drupal_get_path('module', 'bootstrap_layout_builder') . '/images/ui/' . ($tab['icon'] ? $tab['icon'] : 'default.svg') . '" />'),
+          'icon' => t('<img class="blb_icon" src="/' . drupal_get_path('module', 'bootstrap_styles') . '/images/ui/' . ($tab['icon'] ? $tab['icon'] : 'default.svg') . '" />'),
         ],
       ];
 
@@ -148,8 +172,8 @@ class FieldBlock extends BaseFieldBlock {
         '#type' => 'container',
         '#attributes' => [
           'class' => [
-            'blb_tab-pane',
-            'blb_tab-pane--' . $tab['machine_name'],
+            'bs_tab-pane',
+            'bs_tab-pane--' . $tab['machine_name'],
             isset($tab['active']) && $tab['active'] == TRUE ? 'active' : '',
           ],
         ],
@@ -161,7 +185,7 @@ class FieldBlock extends BaseFieldBlock {
     $form['ui']['tab_content']['content'] += $parent_form;
 
     $form['ui']['tab_content']['appearance']['#tree'] = TRUE;
-    $form['ui']['tab_content']['appearance'] += $this->stylesGroupManager->buildStylesFormElements($form['ui']['tab_content']['appearance'], $form_state, $this->configuration['bootstrap_styles']);
+    $form['ui']['tab_content']['appearance'] += $this->stylesGroupManager->buildStylesFormElements($form['ui']['tab_content']['appearance'], $form_state, $this->configuration['bootstrap_styles']['block_style'], 'layout_builder_blocks.styles');
 
     // Attach Bootstrap Styles base library.
     $form['#attached']['library'][] = 'bootstrap_styles/layout_builder_form_style';
