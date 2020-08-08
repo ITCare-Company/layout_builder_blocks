@@ -5,5 +5,8 @@ function layout_builder_blocks_block_alter(array &$definitions) {
     if (strpos($key, 'field_block') === 0) {
       $definitions[$key]['class'] = 'Drupal\layout_builder_blocks\Plugin\Block\FieldBlock';
     }
+    if (strpos($key, 'inline_block') === 0) {
+      $definitions[$key]['class'] = 'Drupal\layout_builder_blocks\Plugin\Block\InlineBlock';
+    }
   }
 }
