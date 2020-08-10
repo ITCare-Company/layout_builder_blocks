@@ -35,6 +35,8 @@ class BlockComponentRenderArraySubscriber implements EventSubscriberInterface {
    *   The entity type manager.
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
    *   Access configuration.
+   * @param \Drupal\bootstrap_styles\StylesGroup\StylesGroupManager $styles_group_manager
+   *   The styles group plugin manager.
    */
   public function __construct(EntityTypeManagerInterface $entityTypeManager, ConfigFactoryInterface $config_factory, StylesGroupManager $styles_group_manager) {
     $this->entityTypeManager = $entityTypeManager;
@@ -46,8 +48,6 @@ class BlockComponentRenderArraySubscriber implements EventSubscriberInterface {
    * {@inheritdoc}
    */
   public static function getSubscribedEvents() {
-    // Layout Builder also subscribes to this event to build the initial render
-    // array. We use a higher weight so that we execute after it.
     $events[LayoutBuilderEvents::SECTION_COMPONENT_BUILD_RENDER_ARRAY] = ['onBuildRender', 50];
     return $events;
   }
@@ -62,16 +62,22 @@ class BlockComponentRenderArraySubscriber implements EventSubscriberInterface {
     $build = $event->getBuild();
 
     $block_style_configs = [];
-    if (isset($build['#configuration']['bootstrap_styles']['block_style'])) {
-      $block_style_configs = $build['#configuration']['bootstrap_styles']['block_style'];
+    if ($bootstrap_styles = $event->getComponent()->get('bootstrap_styles')) {
+      if (isset($bootstrap_styles['block_style'])) {
+        $block_style_configs = $bootstrap_styles['block_style'];
+      }
     }
 
     // Build dynamic styles.
-    $build = $this->stylesGroupManager->buildStyles(
-      $build,
-      $block_style_configs, // Storage.
-      NULL, // Theme wrapper that we need to apply styles to it.
-    );
+    if (count($block_style_configs) > 0) {
+      $build = $this->stylesGroupManager->buildStyles(
+        $build,
+        // Storage.
+        $block_style_configs,
+        // Theme wrapper that we need to apply styles to it.
+        NULL,
+      );
+    }
 
     $event->setBuild($build);
   }

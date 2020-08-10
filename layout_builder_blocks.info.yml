@@ -3,8 +3,7 @@ description: 'Add UI styles support to blocks from Layout Builder module.'
 type: module
 core: 8.x
 core_version_requirement: ^8 || ^9
-# configure: bootstrap_layout_builder.settings
+configure: layout_builder_blocks.styles
 package: 'Layout Builder'
 dependencies:
   - bootstrap_styles:bootstrap_styles
-
