@@ -145,7 +145,7 @@ function layout_builder_blocks_form_alter(&$form, FormStateInterface $form_state
 function _layout_builder_blocks_submit_block_form(array &$form, FormStateInterface $form_state) {
   $bootstrap_styles = [];
   $bootstrap_styles['block_style'] = [];
-  $bootstrap_styles['block_style'] = \Drupal::service('plugin.manager.bootstrap_styles_group')->submitStylesFormElements($form['ui']['tab_content']['appearance'], $form_state, ['appearance'], $bootstrap_styles['block_style']);
+  $bootstrap_styles['block_style'] = \Drupal::service('plugin.manager.bootstrap_styles_group')->submitStylesFormElements($form['ui']['tab_content']['appearance'], $form_state, ['appearance'], $bootstrap_styles['block_style'], 'layout_builder_blocks.styles');
 
   // Save styles' configurations.
   $formObject = $form_state->getFormObject();
