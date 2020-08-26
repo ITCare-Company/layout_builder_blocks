@@ -75,7 +75,7 @@ class BlockComponentRenderArraySubscriber implements EventSubscriberInterface {
         // Storage.
         $block_style_configs,
         // Theme wrapper that we need to apply styles to it.
-        NULL,
+        NULL
       );
     }
 
