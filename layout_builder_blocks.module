@@ -54,7 +54,7 @@ function layout_builder_blocks_form_alter(&$form, FormStateInterface $form_state
       $tabs = [
         [
           'machine_name' => 'content',
-          'icon' => 'layout.svg',
+          'icon' => 'content.svg',
           'title' => t('Content'),
           'active' => TRUE,
         ],

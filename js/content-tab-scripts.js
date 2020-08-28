@@ -10,8 +10,8 @@
     attach: function (context) {
 
       // Move the original block fields to content tab.
-      $('#drupal-off-canvas form.layout-builder-configure-block > :not(#bs_ui):not(.form-submit)').each(function() {
-        $('#drupal-off-canvas form.layout-builder-configure-block > #bs_ui > #bs_tabContent > .bs_tab-pane--content').append($(this));
+      $('form.layout-builder-configure-block > :not(#bs_ui):not(.form-submit)').each(function() {
+        $('form.layout-builder-configure-block > #bs_ui > #bs_tabContent > .bs_tab-pane--content').append($(this));
       });
 
     }
