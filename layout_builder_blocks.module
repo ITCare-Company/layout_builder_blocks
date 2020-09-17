@@ -90,12 +90,12 @@ function layout_builder_blocks_form_alter(&$form, FormStateInterface $form_state
       foreach ($tabs as $tab) {
         $form['ui']['nav_tabs'][$tab['machine_name']] = [
           '#type' => 'inline_template',
-          '#template' => '<li><a data-target="{{ target|clean_class }}" class="{{active}}">{{ icon }}<div class="bs_tooltip" data-placement="bottom" role="tooltip">{{ title }}</div></a></li>',
+          '#template' => '<li><a data-target="{{ target|clean_class }}" class="{{active}}"><span role="img">{% include icon %}</span>{{ title }}</a></li>',
           '#context' => [
             'title' => $tab['title'],
             'target' => $tab['machine_name'],
             'active' => isset($tab['active']) && $tab['active'] == TRUE ? 'active' : '',
-            'icon' => t('<img class="blb_icon" src="/' . drupal_get_path('module', 'bootstrap_styles') . '/images/ui/' . ($tab['icon'] ? $tab['icon'] : 'default.svg') . '" />'),
+            'icon' => '/' . drupal_get_path('module', 'bootstrap_styles') . '/images/ui/' . ($tab['icon'] ? $tab['icon'] : 'default.svg'),
           ],
         ];
 
