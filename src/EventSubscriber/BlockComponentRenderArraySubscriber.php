@@ -29,6 +29,13 @@ class BlockComponentRenderArraySubscriber implements EventSubscriberInterface {
   protected $configFactory;
 
   /**
+   * The styles group plugin manager.
+   *
+   * @var Drupal\bootstrap_styles\StylesGroup\StylesGroupManager
+   */
+  protected $stylesGroupManager;
+
+  /**
    * BlockComponentRenderArraySubscriber constructor.
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
