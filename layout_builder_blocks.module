@@ -12,6 +12,12 @@ use Drupal\Core\Form\FormStateInterface;
  */
 function layout_builder_blocks_form_alter(&$form, FormStateInterface $form_state) {
   if ($form['#form_id'] === 'layout_builder_add_block' || $form['#form_id'] === 'layout_builder_update_block') {
+
+    // Skip if this is a dashboard or dashboards route.
+    if (layout_builder_blocks__is_dashboard_type_route()) {
+      return;
+    }
+
     $allowed = FALSE;
 
     /** @var \Drupal\layout_builder\Form\ConfigureBlockFormBase $form_object */
@@ -151,4 +157,33 @@ function _layout_builder_blocks_submit_block_form(array &$form, FormStateInterfa
   $formObject = $form_state->getFormObject();
   $component = $formObject->getCurrentComponent();
   $component->set('bootstrap_styles', $bootstrap_styles);
+}
+
+/**
+ * Returns true if the current route is a dashboard-type route.
+ *
+ * @return bool
+ *   Returns true for dashboard or dashboards routes.
+ */
+function layout_builder_blocks__is_dashboard_type_route() {
+  $is_dashboard = &drupal_static(__FUNCTION__);
+  if ($is_dashboard !== NULL) {
+    return $is_dashboard;
+  }
+
+  $route_name = \Drupal::routeMatch()->getRouteName();
+  $path_info = \Drupal::requestStack()->getCurrentRequest()->getPathInfo();
+
+  $is_dashboard = FALSE;
+  if ($route_name !== NULL) {
+    $is_dashboard = str_contains($route_name, 'dashboard') 
+      || str_contains($route_name, 'dashboards')
+      || str_contains($path_info, 'dashboard')
+      || str_contains($path_info, 'dashboards');
+  }
+
+  $context = NULL;
+  \Drupal::moduleHandler()->alter('layout_builder_blocks__is_dashboard_type_route', $is_dashboard, $context);
+
+  return $is_dashboard;
 }
